@@ -1,13 +1,14 @@
 from aws_cdk import aws_apigateway
 from aws_cdk import aws_lambda
 from aws_cdk import aws_elasticsearch
+from aws_cdk import aws_ec2
 from aws_cdk.aws_lambda_python import PythonFunction
 from aws_cdk import core as cdk
 
 
 from aws_solutions_constructs import aws_apigateway_lambda
 
-ELASTICSEARCH = 'vpc-rna-expression-dro56qntagtgmls6suff2m7nza.us-west-2.es.amazonaws.com:80'
+ELASTICSEARCH = 'https://vpc-rna-expression-dro56qntagtgmls6suff2m7nza.us-west-2.es.amazonaws.com'
 
 FUNCTION_REGISTRY = {}
 
@@ -34,6 +35,24 @@ RESOURCES = {
     ('service-info', 'service_info'): dict(),
 }
 
+VPC_LAMBDAS = [
+    'expressions_bytes',
+]
+
+
+def make_lambda_in_vpc(context, name, entry='serverless_rnaget/lambdas/', index='rnaget.py'):
+    return PythonFunction(
+        context,
+        name,
+        entry=entry,
+        index=index,
+        handler=name,
+        runtime=aws_lambda.Runtime.PYTHON_3_8,
+        vpc=context.internal_network.vpc,
+        security_group=context.internal_network.security_group,
+        allow_public_subnet=True,
+    )
+
 
 def make_lambda(context, name, entry='serverless_rnaget/lambdas/', index='rnaget.py'):
     return PythonFunction(
@@ -44,6 +63,12 @@ def make_lambda(context, name, entry='serverless_rnaget/lambdas/', index='rnaget
         handler=name,
         runtime=aws_lambda.Runtime.PYTHON_3_8,
     )
+
+
+def make_lambda_factory(context, name):
+    if name in VPC_LAMBDAS:
+        return make_lambda_in_vpc(context, name)
+    return make_lambda(context,name)
 
 
 def make_api_gateway_to_lambda(context, name, lambda_):
@@ -60,7 +85,7 @@ def make_api_gateway_to_lambda(context, name, lambda_):
 
 
 def make_handler(context, name):
-    lambda_ = make_lambda(context, f'{name}')
+    lambda_ = make_lambda_factory(context, f'{name}')
     FUNCTION_REGISTRY[name] = lambda_
     return aws_apigateway.LambdaIntegration(
         lambda_
@@ -77,14 +102,23 @@ def add_resources_and_handlers(context, resources, root, action='GET'):
     return root
 
 
-def give_lambda_permission_to_elasticsearch(domain):
-    domain.grant_read(FUNCTION_REGISTRY['expressions_bytes'])
+class VPCSecurity(cdk.Construct):
+    def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
+        super().__init__(scope, construct_id, **kwargs)
+        self.vpc = aws_ec2.Vpc.from_lookup(self, 'VPC', vpc_id='vpc-ea3b6581')
+        self.security_group = aws_ec2.SecurityGroup.from_security_group_id(
+            self,
+            "SG",
+            "sg-022ea667",
+            mutable=False
+        )
 
 
 class API(cdk.Stack):
 
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
+        self.internal_network = VPCSecurity(self, 'VPCSecurity')
         self.default_lambda = make_lambda(
             self,
             'default',
@@ -105,4 +139,3 @@ class API(cdk.Stack):
             "RNAGetExpressions",
             ELASTICSEARCH
         )
-        give_lambda_permission_to_elasticsearch(self.domain)
