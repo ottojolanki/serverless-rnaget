@@ -3,14 +3,14 @@ import os
 
 from aws_cdk import core as cdk
 
-from serverless_rnaget.serverless_rnaget_stack import RnagetStack
+from serverless_rnaget.gateway.api import API as RNAGetAPI
 
 
 app = cdk.App()
 
-RnagetStack(
+RNAGetAPI(
     app,
-    'RnagetStack',
+    'RNAGetAPIStack',
     env=cdk.Environment(account='618537831167', region='us-west-2'),
 )
 

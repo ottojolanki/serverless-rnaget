@@ -65,7 +65,6 @@ def make_handler(context, name):
 
 def add_resources_and_handlers(context, resources, root, action='GET'):
     for (parent_resource, parent_handler), children_resources in resources.items():
-        print(parent_resource, parent_handler, children_resources)
         parent = root.add_resource(parent_resource)
         if parent_handler:
             handler = make_handler(context, parent_handler)
