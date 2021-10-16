@@ -17,7 +17,7 @@ RESOURCES = {
         ('{studies_id}', 'studies_id'): dict(),
         ('filters', 'study_filters'): dict(),
     },
-    ('expressions', 'expressions_ids'): {
+    ('expressions', 'expression_ids'): {
         ('formats', 'expressions_formats'): dict(),
         ('units', 'expressions_units'): dict(),
         ('ticket', 'expressions_ticket'): dict(),
