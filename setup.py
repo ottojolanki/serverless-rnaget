@@ -9,7 +9,7 @@ setuptools.setup(
     name="serverless_rnaget",
     version="0.0.1",
 
-    description="An empty CDK Python app",
+    description="Serverless RNAget",
     long_description=long_description,
     long_description_content_type="text/markdown",
 
@@ -19,7 +19,11 @@ setuptools.setup(
     packages=setuptools.find_packages(where="serverless_rnaget"),
 
     install_requires=[
-        "aws-cdk.core==1.127.0",
+        "aws-cdk.core==1.125.0",
+        "aws_cdk.aws_lambda==1.125.0",
+        "aws_cdk.aws_apigateway==1.125.0",
+        "aws_cdk.aws_lambda_python==1.125.0",
+        "aws_solutions_constructs.aws_apigateway_lambda==1.125.0",
     ],
 
     python_requires=">=3.6",
