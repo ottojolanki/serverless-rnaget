@@ -1,12 +1,15 @@
 from aws_cdk import aws_apigateway
 from aws_cdk import aws_lambda
+from aws_cdk import aws_elasticsearch
 from aws_cdk.aws_lambda_python import PythonFunction
 from aws_cdk import core as cdk
 
 
 from aws_solutions_constructs import aws_apigateway_lambda
 
+ELASTICSEARCH = 'vpc-rna-expression-dro56qntagtgmls6suff2m7nza.us-west-2.es.amazonaws.com:80'
 
+FUNCTION_REGISTRY = {}
 
 RESOURCES = {
     ('projects', 'projects'): {
@@ -58,6 +61,7 @@ def make_api_gateway_to_lambda(context, name, lambda_):
 
 def make_handler(context, name):
     lambda_ = make_lambda(context, f'{name}')
+    FUNCTION_REGISTRY[name] = lambda_
     return aws_apigateway.LambdaIntegration(
         lambda_
     )
@@ -71,6 +75,10 @@ def add_resources_and_handlers(context, resources, root, action='GET'):
             parent.add_method(action, handler)
         add_resources_and_handlers(context, children_resources, parent, action)
     return root
+
+
+def give_lambda_permission_to_elasticsearch(domain):
+    domain.grant_read(FUNCTION_REGISTRY['expressions_bytes'])
 
 
 class API(cdk.Stack):
@@ -92,3 +100,9 @@ class API(cdk.Stack):
             RESOURCES,
             self.gateway.root
         )
+        self.domain = aws_elasticsearch.Domain.from_domain_endpoint(
+            self,
+            "RNAGetExpressions",
+            ELASTICSEARCH
+        )
+        give_lambda_permission_to_elasticsearch(self.domain)

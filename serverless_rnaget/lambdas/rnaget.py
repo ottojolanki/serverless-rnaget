@@ -1,4 +1,5 @@
 import json
+import requests
 
 
 DEFAULT_RESPONSE = {
@@ -100,7 +101,16 @@ def expressions_id_ticket(event, context):
 
 
 def expressions_bytes(event, context):
-    return DEFAULT_RESPONSE
+    r = requests.get(
+        'http://vpc-rna-expression-dro56qntagtgmls6suff2m7nza.us-west-2.es.amazonaws.com:80'
+    )
+    return {
+        'statusCode': r.status_code,
+        'headers': {
+            'Content-Type': 'application/json'
+        },
+        'body': json.dumps(r.json())
+    }
 
 
 def expressions_id_bytes(event, context):
