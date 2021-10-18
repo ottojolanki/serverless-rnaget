@@ -1,14 +1,10 @@
 from aws_cdk import aws_apigateway
 from aws_cdk import aws_lambda
-from aws_cdk import aws_elasticsearch
-from aws_cdk import aws_ec2
 from aws_cdk.aws_lambda_python import PythonFunction
 from aws_cdk import core as cdk
 
 from aws_solutions_constructs import aws_apigateway_lambda
 
-
-ELASTICSEARCH = 'https://vpc-rna-expression-dro56qntagtgmls6suff2m7nza.us-west-2.es.amazonaws.com'
 
 FUNCTION_REGISTRY = {}
 
@@ -34,7 +30,6 @@ RESOURCES = {
     },
     ('service-info', 'service_info'): {},
 }
-
 
 VPC_LAMBDAS = [
     'expressions_bytes',
@@ -103,23 +98,12 @@ def add_resources_and_handlers(context, resources, root, action='GET'):
     return root
 
 
-class VPCSecurity(cdk.Construct):
-    def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
-        self.vpc = aws_ec2.Vpc.from_lookup(self, 'VPC', vpc_id='vpc-ea3b6581')
-        self.security_group = aws_ec2.SecurityGroup.from_security_group_id(
-            self,
-            "SG",
-            "sg-022ea667",
-            mutable=False
-        )
-
-
 class API(cdk.Stack):
 
-    def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
+    def __init__(self, scope, construct_id, internal_network, elasticsearch, **kwargs):
         super().__init__(scope, construct_id, **kwargs)
-        self.internal_network = VPCSecurity(self, 'VPCSecurity')
+        self.internal_network = internal_network
+        self.elasticsearch = elasticsearch
         self.default_lambda = make_lambda(
             self,
             'default',
@@ -134,9 +118,4 @@ class API(cdk.Stack):
             self,
             RESOURCES,
             self.gateway.root
-        )
-        self.domain = aws_elasticsearch.Domain.from_domain_endpoint(
-            self,
-            "RNAGetExpressions",
-            ELASTICSEARCH
         )
