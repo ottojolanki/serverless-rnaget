@@ -23,7 +23,6 @@ class InternalNetwork(cdk.Construct):
         )
 
 
-
 class ExistingResources(cdk.Stack):
 
     def __init__(self, scope: cdk.Construct, construct_id: str, **kwargs) -> None:
