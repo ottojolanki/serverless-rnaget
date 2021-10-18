@@ -5,8 +5,8 @@ from aws_cdk import aws_ec2
 from aws_cdk.aws_lambda_python import PythonFunction
 from aws_cdk import core as cdk
 
-
 from aws_solutions_constructs import aws_apigateway_lambda
+
 
 ELASTICSEARCH = 'https://vpc-rna-expression-dro56qntagtgmls6suff2m7nza.us-west-2.es.amazonaws.com'
 
@@ -14,26 +14,27 @@ FUNCTION_REGISTRY = {}
 
 RESOURCES = {
     ('projects', 'projects'): {
-        ('{project_id}', 'project_id'): dict(),
-        ('filters', 'project_filters'): dict(),
+        ('{project_id}', 'project_id'): {},
+        ('filters', 'project_filters'): {},
     },
     ('studies', 'studies'): {
-        ('{studies_id}', 'studies_id'): dict(),
-        ('filters', 'study_filters'): dict(),
+        ('{studies_id}', 'studies_id'): {},
+        ('filters', 'study_filters'): {},
     },
     ('expressions', 'expression_ids'): {
-        ('formats', 'expressions_formats'): dict(),
-        ('units', 'expressions_units'): dict(),
-        ('ticket', 'expressions_ticket'): dict(),
+        ('formats', 'expressions_formats'): {},
+        ('units', 'expressions_units'): {},
+        ('ticket', 'expressions_ticket'): {},
         ('{expression_id}', None): {
-            ('ticket', 'expressions_id_ticket'): dict(),
-            ('bytes', 'expressions_id_bytes'): dict(),
+            ('ticket', 'expressions_id_ticket'): {},
+            ('bytes', 'expressions_id_bytes'): {},
         },
-        ('bytes', 'expressions_bytes'): dict(),
-        ('filters', 'expressions_filters'): dict(),
+        ('bytes', 'expressions_bytes'): {},
+        ('filters', 'expressions_filters'): {},
     },
-    ('service-info', 'service_info'): dict(),
+    ('service-info', 'service_info'): {},
 }
+
 
 VPC_LAMBDAS = [
     'expressions_bytes',
