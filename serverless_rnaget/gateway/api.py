@@ -113,13 +113,14 @@ class API(cdk.Stack):
     ):
         super().__init__(scope, construct_id, **kwargs)
         self.internal_network = internal_network
+        self.certificate = certificate,
         self.elasticsearch = elasticsearch
         self.default_lambda = make_lambda(
             self,
             "default",
         )
         self.gateway_to_lambda = make_api_gateway_to_lambda(
-            self, "RNAGetAPI", self.default_lambda, certificate
+            self, "RNAGetAPI", self.default_lambda, self.certificate
         )
         self.gateway = self.gateway_to_lambda.api_gateway
         self.resources = add_resources_and_handlers(self, RESOURCES, self.gateway.root)
