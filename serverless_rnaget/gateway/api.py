@@ -78,8 +78,8 @@ def make_api_gateway_to_lambda(context, name, lambda_, certificate):
             default_method_options=aws_apigateway.MethodOptions(
                 authorization_type=aws_apigateway.AuthorizationType.NONE,
             ),
-            domain_name=aws_apigateway.DomainName(
-                context, "RnaGetDomain", certificate=certificate, domain_name="rnaget"
+            domain_name=aws_apigateway.DomainNameOptions(
+                certificate=certificate, domain_name="rnaget"
             ),
         ),
     )
@@ -113,7 +113,7 @@ class API(cdk.Stack):
     ):
         super().__init__(scope, construct_id, **kwargs)
         self.internal_network = internal_network
-        self.certificate = certificate,
+        self.certificate = certificate
         self.elasticsearch = elasticsearch
         self.default_lambda = make_lambda(
             self,
