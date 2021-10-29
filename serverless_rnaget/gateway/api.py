@@ -79,7 +79,7 @@ def make_api_gateway_to_lambda(context, name, lambda_, certificate):
                 authorization_type=aws_apigateway.AuthorizationType.NONE,
             ),
             domain_name=aws_apigateway.DomainNameOptions(
-                certificate=certificate, domain_name="rnaget"
+                certificate=certificate, domain_name="rnaget.api.encodedcc.org"
             ),
         ),
     )
