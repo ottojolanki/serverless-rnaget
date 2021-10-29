@@ -9,34 +9,36 @@ from aws_solutions_constructs import aws_apigateway_lambda
 FUNCTION_REGISTRY = {}
 
 RESOURCES = {
-    ('projects', 'projects'): {
-        ('{project_id}', 'project_id'): {},
-        ('filters', 'project_filters'): {},
+    ("projects", "projects"): {
+        ("{project_id}", "project_id"): {},
+        ("filters", "project_filters"): {},
     },
-    ('studies', 'studies'): {
-        ('{studies_id}', 'studies_id'): {},
-        ('filters', 'study_filters'): {},
+    ("studies", "studies"): {
+        ("{studies_id}", "studies_id"): {},
+        ("filters", "study_filters"): {},
     },
-    ('expressions', 'expression_ids'): {
-        ('formats', 'expressions_formats'): {},
-        ('units', 'expressions_units'): {},
-        ('ticket', 'expressions_ticket'): {},
-        ('{expression_id}', None): {
-            ('ticket', 'expressions_id_ticket'): {},
-            ('bytes', 'expressions_id_bytes'): {},
+    ("expressions", "expression_ids"): {
+        ("formats", "expressions_formats"): {},
+        ("units", "expressions_units"): {},
+        ("ticket", "expressions_ticket"): {},
+        ("{expression_id}", None): {
+            ("ticket", "expressions_id_ticket"): {},
+            ("bytes", "expressions_id_bytes"): {},
         },
-        ('bytes', 'expressions_bytes'): {},
-        ('filters', 'expressions_filters'): {},
+        ("bytes", "expressions_bytes"): {},
+        ("filters", "expressions_filters"): {},
     },
-    ('service-info', 'service_info'): {},
+    ("service-info", "service_info"): {},
 }
 
 VPC_LAMBDAS = [
-    'expressions_bytes',
+    "expressions_bytes",
 ]
 
 
-def make_lambda_in_vpc(context, name, entry='serverless_rnaget/lambdas/', index='rnaget.py'):
+def make_lambda_in_vpc(
+    context, name, entry="serverless_rnaget/lambdas/", index="rnaget.py"
+):
     return PythonFunction(
         context,
         name,
@@ -50,7 +52,7 @@ def make_lambda_in_vpc(context, name, entry='serverless_rnaget/lambdas/', index=
     )
 
 
-def make_lambda(context, name, entry='serverless_rnaget/lambdas/', index='rnaget.py'):
+def make_lambda(context, name, entry="serverless_rnaget/lambdas/", index="rnaget.py"):
     return PythonFunction(
         context,
         name,
@@ -64,10 +66,10 @@ def make_lambda(context, name, entry='serverless_rnaget/lambdas/', index='rnaget
 def make_lambda_factory(context, name):
     if name in VPC_LAMBDAS:
         return make_lambda_in_vpc(context, name)
-    return make_lambda(context,name)
+    return make_lambda(context, name)
 
 
-def make_api_gateway_to_lambda(context, name, lambda_):
+def make_api_gateway_to_lambda(context, name, lambda_, certificate):
     return aws_apigateway_lambda.ApiGatewayToLambda(
         context,
         name,
@@ -75,20 +77,21 @@ def make_api_gateway_to_lambda(context, name, lambda_):
         api_gateway_props=aws_apigateway.RestApiProps(
             default_method_options=aws_apigateway.MethodOptions(
                 authorization_type=aws_apigateway.AuthorizationType.NONE,
-            )
-        )
+            ),
+            domain_name=aws_apigateway.DomainName(
+                context, "RnaGetDomain", certificate=certificate, domain_name="rnaget"
+            ),
+        ),
     )
 
 
 def make_handler(context, name):
-    lambda_ = make_lambda_factory(context, f'{name}')
+    lambda_ = make_lambda_factory(context, f"{name}")
     FUNCTION_REGISTRY[name] = lambda_
-    return aws_apigateway.LambdaIntegration(
-        lambda_
-    )
+    return aws_apigateway.LambdaIntegration(lambda_)
 
 
-def add_resources_and_handlers(context, resources, root, action='GET'):
+def add_resources_and_handlers(context, resources, root, action="GET"):
     for (parent_resource, parent_handler), children_resources in resources.items():
         parent = root.add_resource(parent_resource)
         if parent_handler:
@@ -99,23 +102,24 @@ def add_resources_and_handlers(context, resources, root, action='GET'):
 
 
 class API(cdk.Stack):
-
-    def __init__(self, scope, construct_id, internal_network, elasticsearch, **kwargs):
+    def __init__(
+        self,
+        scope,
+        construct_id,
+        internal_network,
+        elasticsearch,
+        certificate,
+        **kwargs,
+    ):
         super().__init__(scope, construct_id, **kwargs)
         self.internal_network = internal_network
         self.elasticsearch = elasticsearch
         self.default_lambda = make_lambda(
             self,
-            'default',
+            "default",
         )
         self.gateway_to_lambda = make_api_gateway_to_lambda(
-            self,
-            'RNAGetAPI',
-            self.default_lambda,
+            self, "RNAGetAPI", self.default_lambda, certificate
         )
         self.gateway = self.gateway_to_lambda.api_gateway
-        self.resources = add_resources_and_handlers(
-            self,
-            RESOURCES,
-            self.gateway.root
-        )
+        self.resources = add_resources_and_handlers(self, RESOURCES, self.gateway.root)

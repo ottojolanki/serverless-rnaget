@@ -26,6 +26,7 @@ rnaget_api = RNAGetAPI(
     'RNAGetAPIStack',
     internal_network=existing_resources.internal_network,
     elasticsearch=existing_resources.elasticsearch,
+    certificate=existing_resources.certificate,
     env=ENVIRONMENT,
 )
 

@@ -22,6 +22,7 @@ setuptools.setup(
         "aws-cdk.core==1.125.0",
         "aws_cdk.aws_lambda==1.125.0",
         "aws_cdk.aws_apigateway==1.125.0",
+        "aws_cdk.aws_certificatemanager==1.125.0",
         "aws_cdk.aws_lambda_python==1.125.0",
         "aws_cdk.aws_elasticsearch==1.125.0",
         "aws_cdk.aws_ec2==1.125.0",
